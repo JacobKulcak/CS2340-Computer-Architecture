@@ -1,0 +1,85 @@
+.data
+output_1: .asciiz "Element["
+output_2: .asciiz "] = "
+output_3: .asciiz "\n"  # Format string for printing
+arr: .space 44 
+i: .word
+
+.text
+main:
+    # Initialize array n to 0
+    li $t0, 0           # $t0 = i = 0 (loop counter)
+    li $t1, 100         # Initial value for n[i]
+    la $t2, n           # Load the base address of array n
+    sw $t2, arr		#store address for beginning of arr
+    
+init_loop:
+    beq $t0, 10, init_done  # If i >= 10, exit the loop
+    sw $t1, 0($t2)        # Store n[i]
+    addi $t0, $t0, 1      # i++
+    addi $t1, $t1, 1      # Increment the value to be stored
+    addi $t2, $t2, 4      # Move to the next element
+    j init_loop
+
+init_done:
+    
+    # Output array elements
+    li $t3, 0             # $t3 = j = 0 (loop counter)
+    lw $t2, arr
+output_loop:
+    beq $t3, 10, sum_loop_done  # If j >= 10, exit the loop
+
+    move $a1, $t3         # Set the index for the format string
+    
+    
+    li $v0, 4             # Print string syscall code
+    la $a0, output_1 # Load the format string
+    syscall
+    
+    li $v0, 1
+    add $a0, $t3, $zero
+    syscall
+    
+    li $v0, 4             # Print string syscall code
+    la $a0, output_2 # Load the format string
+    syscall
+    
+    lw $a0, 0($t2)        # Load n[j] for printing
+    li $v0, 1
+    syscall
+    
+    li $v0, 4             # Print string syscall code
+    la $a0, output_3 # Load the format string
+    syscall
+    
+    addi $t3, $t3, 1      # j++
+    addi $t2, $t2, 4      # Move to the next element
+    j output_loop
+
+sum_loop_done:
+    
+    # Calculate the sum of array elements
+    li $t4, 0             # $t4 = k = 0 (loop counter)
+    li $t5, 0             # $t5 = sum = 0
+    lw $t2 arr 
+sum_loop:
+    beq $t4, 10, print_sum  # If k >= 10, exit the loop
+    lw $t6, 0($t2)        # Load n[k] for addition
+    add $t5, $t5, $t6     # sum += n[k]
+    addi $t4, $t4, 1      # k++
+    addi $t2, $t2, 4      # Move to the next element
+    j sum_loop
+
+print_sum:
+    # Output the sum
+    
+    li $v0, 1             # Print integer syscall code
+    move $a0, $t5         # Load the sum
+    syscall
+
+    # Exit the program
+    li $v0, 10            # Exit syscall code
+    syscall
+
+.data
+n: .space 40  # Space for 10 integers (4 bytes each)

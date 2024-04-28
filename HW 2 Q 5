@@ -1,0 +1,76 @@
+.data
+output1: .asciiz "Geeks"  # First string
+output2: .asciiz "World"  # Second string
+str: .space 100      # Space for the concatenated string
+str1: .asciiz "\nFirst string: "
+str2: .asciiz "\nSecond string: "
+output3: .asciiz "\nConcatenated string: "
+
+.text
+main:
+    # Initialize indices i and j
+    li $t0, 0  # $t0 = i = 0
+    li $t1, 0  # $t1 = j = 0
+
+    # Print the first string
+    la $a0, str1
+    li $v0, 4  # Print string syscall code
+    syscall
+    
+    # Print the first string
+    la $a0, output1
+    li $v0, 4  # Print string syscall code
+    syscall
+    
+    # Print the first string
+    la $a0, str2
+    li $v0, 4  # Print string syscall code
+    syscall
+    
+    # Print the second string
+    la $a0, output2
+    li $v0, 4  # Print string syscall code
+    syscall
+
+    # Insert the first string into the new string
+copy_output1_loop:
+    lb $t2, output1($t0)  # Load a character from output1[i] into $t2
+    beqz $t2, copy_output2_loop_done  # If it's the null terminator, exit the loop
+    sb $t2, str($t1)  # Store the character in str[j]
+    addi $t0, $t0, 1  # Increment i
+    addi $t1, $t1, 1  # Increment j
+    j copy_output1_loop
+
+copy_output2_loop_done:
+
+    # Reset index i to 0
+    li $t0, 0
+
+    # Insert the second string into the new string
+copy_output2_loop:
+    lb $t2, output2($t0)  # Load a character from output2[i] into $t2
+    beqz $t2, copy_output2_done  # If it's the null terminator, exit the loop
+    sb $t2, str($t1)  # Store the character in str[j]
+    addi $t0, $t0, 1  # Increment i
+    addi $t1, $t1, 1  # Increment j
+    j copy_output2_loop
+
+copy_output2_done:
+
+    # Null-terminate the concatenated string
+    li $t2, 0  # Load null terminator character
+    sb $t2, str($t1)  # Store it at the end of str
+
+    # Print the first string
+    la $a0, output3
+    li $v0, 4  # Print string syscall code
+    syscall
+    
+    # Print the concatenated string
+    la $a0, str
+    li $v0, 4  # Print string syscall code
+    syscall
+
+    # Exit the program
+    li $v0, 10  # Exit syscall code
+    syscall
